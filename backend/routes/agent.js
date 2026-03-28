@@ -3,6 +3,7 @@ import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import Product from '../models/Product.js';
 import Farmer, { computeTrustScore } from '../models/Farmer.js';
+import { callLava } from '../services/lava.js';
 
 const router = express.Router();
 
@@ -34,19 +35,25 @@ router.post('/chat', async (req, res) => {
       };
     });
 
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const systemPrompt = `You are a farm-to-table shopping assistant. You have access to a list of available local farm products. When a user asks for a recipe or shopping help, suggest a recipe if relevant, map each ingredient to the best available farm product, and return a structured JSON response with: { message: string, recipe: string or null, suggested_items: [{ productId, productName, farmName, quantity, reason }] }. Prioritize farms with higher trust scores. Be warm and specific. IMPORTANT: Return ONLY valid JSON with no extra text or markdown.`;
+    const userContent = `Available products:\n${JSON.stringify(productList, null, 2)}\n\nUser request: ${message}`;
 
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: `You are a farm-to-table shopping assistant. You have access to a list of available local farm products. When a user asks for a recipe or shopping help, suggest a recipe if relevant, map each ingredient to the best available farm product, and return a structured JSON response with: { message: string, recipe: string or null, suggested_items: [{ productId, productName, farmName, quantity, reason }] }. Prioritize farms with higher trust scores. Be warm and specific. IMPORTANT: Return ONLY valid JSON with no extra text or markdown.`,
-      messages: [{
-        role: 'user',
-        content: `Available products:\n${JSON.stringify(productList, null, 2)}\n\nUser request: ${message}`,
-      }],
-    });
+    let raw;
+    try {
+      raw = await callLava(systemPrompt, userContent);
+    } catch (lavaErr) {
+      console.warn('[agent] Lava failed, falling back to Anthropic:', lavaErr.message);
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const response = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userContent }],
+      });
+      raw = response.content[0].text;
+    }
 
-    const raw = response.content[0].text.trim();
+    raw = raw.trim();
     let parsed;
     try {
       parsed = JSON.parse(raw);

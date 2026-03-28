@@ -4,11 +4,13 @@ import Anthropic from '@anthropic-ai/sdk';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { callLava } from '../services/lava.js';
 
 const __routeDir = dirname(fileURLToPath(import.meta.url));
 const envPath = join(__routeDir, '../../.env');
 dotenv.config({ path: envPath, override: true });
 console.log('[trust] ANTHROPIC_API_KEY:', process.env.ANTHROPIC_API_KEY ? '✓ set' : '✗ MISSING');
+console.log('[trust] LAVA_API_KEY:', process.env.LAVA_API_KEY ? '✓ set' : '✗ MISSING');
 
 const router = express.Router();
 
@@ -128,15 +130,24 @@ router.post('/:farmerId/explain', async (req, res) => {
       `- Community Rating: ${breakdown.components.community.score}/10 (${(farmer.averageRating ?? 4.5).toFixed(1)} stars)`,
     ].join('\n');
 
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 300,
-      system: "You are a friendly food transparency assistant. Given a farm's trust score breakdown, write 3 short sentences explaining what the score means for a consumer in plain English. Be warm and specific.",
-      messages: [{ role: 'user', content: scoreText }],
-    });
+    const systemPrompt = "You are a friendly food transparency assistant. Given a farm's trust score breakdown, write 3 short sentences explaining what the score means for a consumer in plain English. Be warm and specific.";
 
-    res.json({ explanation: message.content[0].text, breakdown });
+    let explanation;
+    try {
+      explanation = await callLava(systemPrompt, scoreText);
+    } catch (lavaErr) {
+      console.warn('[trust] Lava failed, falling back to Anthropic:', lavaErr.message);
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const message = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: scoreText }],
+      });
+      explanation = message.content[0].text;
+    }
+
+    res.json({ explanation, breakdown });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
