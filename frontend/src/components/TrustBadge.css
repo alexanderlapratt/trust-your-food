@@ -1,0 +1,41 @@
+.trust-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.trust-arc-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trust-score-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trust-number {
+  font-family: var(--font-body);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.trust-badge-sm .trust-number { font-size: 12px; }
+.trust-badge-md .trust-number { font-size: 14px; }
+.trust-badge-lg .trust-number { font-size: 20px; }
+
+.trust-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}

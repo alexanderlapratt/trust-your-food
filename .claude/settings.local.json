@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(node --check server.js)",
+      "Bash(node --check models/Farmer.js)",
+      "Bash(node --check routes/farmers.js)",
+      "Bash(node --check routes/trust.js)",
+      "Bash(node_modules/.bin/vite build:*)"
+    ]
+  }
+}

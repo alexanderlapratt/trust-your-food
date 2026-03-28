@@ -1,0 +1,15 @@
+{
+  "name": "trust-your-food",
+  "version": "1.0.0",
+  "description": "Local farm marketplace with trust scoring",
+  "scripts": {
+    "postinstall": "cd backend && npm install && cd ../frontend && npm install",
+    "dev": "concurrently --kill-others-on-fail --names \"backend,frontend\" --prefix-colors \"green,cyan\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "seed": "cd backend && npm run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
