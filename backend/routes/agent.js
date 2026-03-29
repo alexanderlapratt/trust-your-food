@@ -1,6 +1,7 @@
-// Farm-to-table AI agent route
+// Farm-to-table AI agent route — includes /chat, /interpret, /speak
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
+import axios from 'axios';
 import Product from '../models/Product.js';
 import Farmer, { computeTrustScore } from '../models/Farmer.js';
 import { callLava } from '../services/lava.js';
@@ -72,6 +73,99 @@ router.post('/chat', async (req, res) => {
     res.json(parsed);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/agent/interpret — LLM cleans raw speech for a given step
+router.post('/interpret', async (req, res) => {
+  try {
+    const { question, step, rawText } = req.body;
+    if (!rawText) return res.status(400).json({ error: 'rawText is required' });
+
+    const isProductStep = step === 'Product';
+
+    const systemPrompt = isProductStep
+      ? `You are a product-name normalizer for a farm marketplace. The farmer just said the name of their product out loud. Your job is to:
+1. Return a clean, properly capitalized product name — remove filler words like "my", "our", "farm", "fresh", "local", "some", "a few", "some of my".
+2. Normalize informal names to standard market names: "ground hamburger" → "Ground Beef", "hamburger meat" → "Ground Beef", "beef patties" → "Ground Beef", "farm eggs" → "Eggs", "hen eggs" → "Eggs", "chicken eggs" → "Eggs", "goat milk" → "Goat Milk", "cow milk" → "Whole Milk".
+3. Also return the best-matching category from this exact list (pick the closest one):
+   - "meat" — beef, hamburger, ground beef, steak, pork, chops, chicken, lamb, turkey, bacon, sausage, brisket, ribs, roast
+   - "dairy" — milk, cheese, yogurt, butter, cream, kefir, whey, chevre, goat cheese
+   - "eggs" — eggs, egg
+   - "vegetables" — tomato, cucumber, squash, zucchini, pepper, carrot, lettuce, spinach, kale, broccoli, cabbage, onion, potato, sweet potato, beet, turnip, radish, pea, bean, corn
+   - "fruits" — apple, pear, berry, strawberry, blueberry, raspberry, peach, plum, cherry, melon, watermelon, grape, citrus, orange, lemon
+   - "herbs" — basil, rosemary, thyme, oregano, sage, dill, parsley, cilantro, mint, chive, lavender, herb bundle
+   - "honey" — honey, honeycomb, beeswax
+   - "grains" — bread, sourdough, rolls, loaf, flour, oats, grain, wheat, rice, granola
+   - "other" — pie, cake, cookie, pastry, tart, brownie, jam, jelly, syrup, pickle, sauce, oil, vinegar
+
+Return a JSON object with exactly two fields: { "name": "<clean product name>", "category": "<category slug>" }. No other text.`
+      : `You are a speech-cleaning assistant for a farm marketplace voice onboarding flow. The farmer just answered a question out loud. Extract only the clean, direct answer from their speech — remove filler words, false starts, self-corrections, and hedging phrases. Return ONLY the cleaned answer text with no commentary, no quotation marks, no prefix.`;
+
+    const userContent = isProductStep
+      ? `Raw speech: "${rawText}"\n\nReturn JSON only.`
+      : `Question asked: "${question || ''}"
+Step context: ${step || ''}
+Raw speech transcript: "${rawText}"
+
+Return the cleaned answer only.`;
+
+    let cleaned;
+    try {
+      cleaned = await callLava(systemPrompt, userContent);
+    } catch (lavaErr) {
+      console.warn('[agent/interpret] Lava failed, falling back to Anthropic:', lavaErr.message);
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const response = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 256,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userContent }],
+      });
+      cleaned = response.content[0].text;
+    }
+
+    res.json({ cleaned: cleaned.trim() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/agent/speak — ElevenLabs TTS proxy (streams audio/mpeg back)
+router.post('/speak', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ error: 'text is required' });
+
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    if (!apiKey || apiKey === 'your_elevenlabs_key_here') {
+      return res.status(503).json({ error: 'ElevenLabs API key not configured' });
+    }
+
+    const response = await axios.post(
+      'https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM',
+      {
+        text,
+        model_id: 'eleven_monolingual_v1',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+      },
+      {
+        headers: {
+          'xi-api-key': apiKey,
+          'Content-Type': 'application/json',
+          Accept: 'audio/mpeg',
+        },
+        responseType: 'arraybuffer',
+        timeout: 15000,
+      }
+    );
+
+    res.set('Content-Type', 'audio/mpeg');
+    res.set('Cache-Control', 'no-cache');
+    res.send(Buffer.from(response.data));
+  } catch (err) {
+    const status = err.response?.status || 500;
+    res.status(status).json({ error: err.message });
   }
 });
 

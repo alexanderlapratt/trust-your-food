@@ -1,0 +1,683 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOICE ONBOARDING — Full-page conversational listing agent
+   ═══════════════════════════════════════════════════════════════ */
+
+.vo-page {
+  min-height: calc(100vh - 64px);
+  background: #1a3a2a;
+  color: #f5f0e8;
+  display: flex;
+  flex-direction: column;
+  font-family: inherit;
+  transition: background 0.5s ease;
+  overflow: hidden;
+}
+
+.vo-is-listening {
+  background: #0e2218;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+
+.vo-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(245, 240, 232, 0.08);
+  flex-shrink: 0;
+}
+
+.vo-logo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #6fcf97;
+  flex-shrink: 0;
+  letter-spacing: -0.01em;
+}
+
+.vo-progress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.vo-step-label {
+  font-size: 0.72rem;
+  color: rgba(245, 240, 232, 0.5);
+  flex-shrink: 0;
+  min-width: 84px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vo-progress-track {
+  flex: 1;
+  height: 3px;
+  background: rgba(245, 240, 232, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.vo-progress-fill {
+  height: 100%;
+  background: #6fcf97;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.vo-step-count {
+  font-size: 0.72rem;
+  color: rgba(245, 240, 232, 0.4);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.vo-form-link {
+  background: none;
+  border: none;
+  color: rgba(245, 240, 232, 0.3);
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.vo-form-link:hover {
+  color: rgba(245, 240, 232, 0.7);
+}
+
+/* ── Chat ────────────────────────────────────────────────────── */
+
+.vo-chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+.vo-chat::-webkit-scrollbar { width: 4px; }
+.vo-chat::-webkit-scrollbar-track { background: transparent; }
+.vo-chat::-webkit-scrollbar-thumb { background: rgba(245,240,232,0.15); border-radius: 2px; }
+
+/* ── Bubbles ─────────────────────────────────────────────────── */
+
+.vo-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 78%;
+  animation: voBubbleIn 0.25s ease;
+}
+
+@keyframes voBubbleIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.vo-bubble-ai   { align-self: flex-start; }
+.vo-bubble-user { align-self: flex-end; flex-direction: row-reverse; }
+
+.vo-avatar {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.vo-bubble-text {
+  padding: 10px 14px;
+  line-height: 1.55;
+  font-size: 0.9rem;
+}
+
+.vo-bubble-ai .vo-bubble-text {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px 16px 16px 16px;
+  color: #f5f0e8;
+}
+
+.vo-bubble-user .vo-bubble-text {
+  background: #2d6a4f;
+  border-radius: 16px 4px 16px 16px;
+  color: #f5f0e8;
+}
+
+.vo-bubble-live .vo-bubble-text {
+  background: rgba(45, 106, 79, 0.4);
+  border: 1px dashed rgba(111, 207, 151, 0.4);
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* ── Practices panel ─────────────────────────────────────────── */
+
+.vo-practices-panel {
+  align-self: flex-start;
+  width: 100%;
+  max-width: 480px;
+  animation: voBubbleIn 0.3s ease;
+}
+
+.vo-practices-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.vo-practice-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid rgba(245, 240, 232, 0.2);
+  background: transparent;
+  color: rgba(245, 240, 232, 0.65);
+  border-radius: 24px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.vo-practice-badge:hover {
+  border-color: #6fcf97;
+  color: #f5f0e8;
+}
+
+.vo-practice-badge.active {
+  background: #2d6a4f;
+  border-color: #6fcf97;
+  color: #f5f0e8;
+}
+
+.vo-check {
+  font-size: 0.75rem;
+  color: #6fcf97;
+  font-weight: 700;
+}
+
+.vo-continue-btn {
+  padding: 10px 24px;
+  background: #6fcf97;
+  color: #1a3a2a;
+  border: none;
+  border-radius: 24px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.vo-continue-btn:hover {
+  background: #4caf70;
+}
+
+/* ── Preview card ────────────────────────────────────────────── */
+
+.vo-preview-card {
+  align-self: stretch;
+  background: #fff;
+  color: #2d3748;
+  border-radius: 16px;
+  padding: 20px;
+  max-width: 480px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  animation: voBubbleIn 0.4s ease;
+}
+
+.vo-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.vo-preview-farm {
+  font-size: 0.78rem;
+  color: #2d6a4f;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vo-preview-cat {
+  font-size: 0.7rem;
+  background: #e8f5e9;
+  color: #2d6a4f;
+  padding: 2px 10px;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+.vo-preview-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a3a2a;
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+.vo-preview-desc {
+  font-size: 0.84rem;
+  color: #555;
+  line-height: 1.55;
+  margin: 0 0 12px;
+}
+
+.vo-preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+
+.vo-preview-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d6a4f;
+}
+
+.vo-preview-qty {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.vo-preview-date {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-bottom: 10px;
+}
+
+.vo-preview-practices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.vo-preview-pill {
+  font-size: 0.7rem;
+  background: #e8f5e9;
+  color: #2d6a4f;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.vo-error {
+  color: #e53e3e;
+  font-size: 0.84rem;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.vo-preview-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+
+.vo-btn-primary {
+  flex: 1;
+  padding: 12px 0;
+  background: #2d6a4f;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.vo-btn-primary:hover:not(:disabled) { background: #1a3a2a; }
+.vo-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.vo-btn-ghost {
+  padding: 12px 18px;
+  background: transparent;
+  color: #2d6a4f;
+  border: 1.5px solid #b7dfc4;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.vo-btn-ghost:hover { background: #f0faf3; }
+
+/* ── Question banner ─────────────────────────────────────────── */
+
+.vo-question-banner {
+  flex-shrink: 0;
+  padding: 14px 24px 6px;
+  border-top: 1px solid rgba(245, 240, 232, 0.06);
+}
+
+.vo-question-text {
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(245, 240, 232, 0.75);
+  text-align: center;
+  line-height: 1.6;
+  font-weight: 400;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ── Controls (mic + text) ───────────────────────────────────── */
+
+.vo-controls {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px 28px;
+}
+
+/* Waveform */
+
+.vo-waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 32px;
+}
+
+.vo-wave-bar {
+  display: block;
+  width: 4px;
+  background: #6fcf97;
+  border-radius: 2px;
+  animation: voWave 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes voWave {
+  from { height: 6px;  opacity: 0.5; }
+  to   { height: 28px; opacity: 1; }
+}
+
+/* Mic button */
+
+.vo-mic-btn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #2d6a4f;
+  border: 2px solid rgba(111, 207, 151, 0.4);
+  font-size: 1.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.vo-mic-btn:hover:not(:disabled) {
+  transform: scale(1.06);
+  background: #3d8a65;
+  box-shadow: 0 6px 28px rgba(45, 106, 79, 0.5);
+}
+
+.vo-mic-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vo-mic-btn.active {
+  background: #c53030;
+  border-color: rgba(252, 129, 129, 0.5);
+  animation: voMicPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes voMicPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(197, 48, 48, 0.4); }
+  50%       { box-shadow: 0 4px 40px rgba(197, 48, 48, 0.7), 0 0 0 10px rgba(197, 48, 48, 0.1); }
+}
+
+.vo-mic-hint {
+  font-size: 0.72rem;
+  color: rgba(245, 240, 232, 0.4);
+  margin: -4px 0 0;
+  letter-spacing: 0.03em;
+}
+
+/* Text row */
+
+.vo-text-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.vo-text-input {
+  flex: 1;
+  padding: 9px 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(245, 240, 232, 0.15);
+  border-radius: 24px;
+  color: #f5f0e8;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+
+.vo-text-input::placeholder { color: rgba(245, 240, 232, 0.3); }
+.vo-text-input:focus { border-color: rgba(111, 207, 151, 0.5); }
+
+.vo-text-send {
+  width: 38px;
+  height: 38px;
+  background: #2d6a4f;
+  border: none;
+  border-radius: 50%;
+  color: #f5f0e8;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.vo-text-send:hover:not(:disabled) { background: #3d8a65; }
+.vo-text-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Still listening indicator ───────────────────────────────── */
+
+.vo-still-listening {
+  font-size: 0.75rem;
+  color: rgba(111, 207, 151, 0.7);
+  letter-spacing: 0.04em;
+  font-style: italic;
+  animation: voFade 0.4s ease;
+}
+
+@keyframes voFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Redo button ──────────────────────────────────────────────── */
+
+.vo-redo-btn {
+  background: none;
+  border: 1px solid rgba(245, 240, 232, 0.18);
+  color: rgba(245, 240, 232, 0.45);
+  font-size: 0.75rem;
+  padding: 5px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  margin-top: -4px;
+}
+
+.vo-redo-btn:hover {
+  border-color: rgba(111, 207, 151, 0.4);
+  color: rgba(245, 240, 232, 0.75);
+  background: rgba(111, 207, 151, 0.06);
+}
+
+/* ── Edit list (review screen) ────────────────────────────────── */
+
+.vo-edit-list {
+  margin-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 14px;
+}
+
+.vo-edit-list-title {
+  font-size: 0.78rem;
+  color: #718096;
+  margin: 0 0 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vo-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.vo-edit-row:last-child {
+  border-bottom: none;
+}
+
+.vo-edit-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.vo-edit-label {
+  font-size: 0.7rem;
+  color: #a0aec0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vo-edit-value {
+  font-size: 0.82rem;
+  color: #2d3748;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vo-edit-btn {
+  flex-shrink: 0;
+  padding: 4px 14px;
+  background: transparent;
+  border: 1.5px solid #b7dfc4;
+  color: #2d6a4f;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.vo-edit-btn:hover {
+  background: #f0faf3;
+  border-color: #2d6a4f;
+}
+
+/* ── Success screen ──────────────────────────────────────────── */
+
+.vo-success-page {
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.vo-success-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(245, 240, 232, 0.1);
+  border-radius: 20px;
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vo-success-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.vo-success-card h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #f5f0e8;
+  font-weight: 700;
+}
+
+.vo-success-card p {
+  margin: 0;
+  color: rgba(245, 240, 232, 0.65);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.vo-success-card .vo-btn-primary {
+  width: 100%;
+}
+
+.vo-success-card .vo-btn-ghost {
+  width: 100%;
+  color: rgba(245, 240, 232, 0.5);
+  border-color: rgba(245, 240, 232, 0.15);
+}
+
+.vo-success-card .vo-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(245, 240, 232, 0.8);
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .vo-header { padding: 12px 16px; gap: 10px; }
+  .vo-step-label { display: none; }
+  .vo-chat { padding: 16px; }
+  .vo-bubble { max-width: 92%; }
+  .vo-controls { padding: 10px 16px 24px; }
+  .vo-question-text { font-size: 0.92rem; }
+  .vo-preview-card { border-radius: 12px; padding: 16px; }
+  .vo-success-card { padding: 36px 24px; }
+}

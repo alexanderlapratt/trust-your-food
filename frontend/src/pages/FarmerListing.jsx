@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './FarmerListing.css';
+import VoiceOnboarding from './VoiceOnboarding.jsx';
 
 const CATEGORIES = ['vegetables', 'fruits', 'meat', 'dairy', 'eggs', 'herbs', 'honey', 'grains', 'other'];
 const UNITS = ['lb', 'oz', 'kg', 'dozen', 'bunch', 'bag', 'jar', 'pint', 'quart', 'gallon', 'half-gal', 'pack', 'bird', 'log', 'ea'];
@@ -27,6 +28,16 @@ const DEFAULT_PRACTICES = {
 };
 
 export default function FarmerListing() {
+  const [mode, setMode] = useState('voice'); // 'voice' | 'form'
+
+  if (mode === 'voice') {
+    return <VoiceOnboarding onSwitchToForm={() => setMode('form')} />;
+  }
+
+  return <FarmerListingForm onSwitchToVoice={() => setMode('voice')} />;
+}
+
+function FarmerListingForm({ onSwitchToVoice }) {
   const [farmerData, setFarmerData] = useState(DEFAULT_FARMER);
   const [productData, setProductData] = useState(DEFAULT_PRODUCT);
   const [practices, setPractices] = useState(DEFAULT_PRACTICES);
@@ -193,6 +204,9 @@ export default function FarmerListing() {
         <div className="container">
           <h1 className="listing-hero-title">List Your Harvest</h1>
           <p className="listing-hero-sub">Join the Trust Your Food network and sell directly to your neighbors.</p>
+          <button className="listing-voice-switch" onClick={onSwitchToVoice}>
+            🎙️ Switch to voice onboarding
+          </button>
         </div>
       </div>
 
