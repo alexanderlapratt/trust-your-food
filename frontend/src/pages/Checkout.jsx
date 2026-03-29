@@ -39,7 +39,12 @@ export default function Checkout() {
   // Group by farm
   const byFarm = cart.reduce((acc, item) => {
     const fn = item.product?.farmName || 'Unknown Farm';
-    if (!acc[fn]) acc[fn] = { farmName: fn, score: item.product?.trustScore || 70, items: [] };
+    if (!acc[fn]) acc[fn] = {
+      farmName: fn,
+      farmerId: item.product?.farmerId,
+      score: item.product?.trustScore || 70,
+      items: [],
+    };
     acc[fn].items.push(item);
     return acc;
   }, {});
@@ -157,7 +162,11 @@ export default function Checkout() {
             <div key={group.farmName} className="farm-group">
               <div className="farm-group-header">
                 <div>
-                  <h3 className="farm-group-name">{group.farmName}</h3>
+                  <h3 className="farm-group-name">
+                    {group.farmerId
+                      ? <Link to={`/farm/${group.farmerId}`} className="farm-group-name-link">{group.farmName}</Link>
+                      : group.farmName}
+                  </h3>
                   <p className="farm-group-count">{group.items.length} item{group.items.length !== 1 ? 's' : ''}</p>
                 </div>
                 <TrustBadge score={group.score} size="sm" showLabel={false} />

@@ -99,6 +99,15 @@
   margin-top: 2px;
 }
 
+.farm-card-farm-link {
+  display: inline-block;
+  transition: color 0.15s;
+}
+.farm-card-farm-link:hover {
+  color: var(--green-dark);
+  text-decoration: underline;
+}
+
 .farm-card-bio {
   font-size: 12px;
   color: var(--text-light);

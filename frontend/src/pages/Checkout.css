@@ -58,6 +58,15 @@
   color: var(--cream);
 }
 
+.farm-group-name-link {
+  color: var(--cream);
+  transition: opacity 0.15s;
+}
+.farm-group-name-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
 .farm-group-count {
   font-size: 12px;
   opacity: 0.7;

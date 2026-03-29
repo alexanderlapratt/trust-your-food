@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import TrustBadge from './TrustBadge.jsx';
 import './FarmCard.css';
 
@@ -124,7 +125,9 @@ export default function FarmCard({ product, onAddToCart }) {
         <div className="farm-card-header">
           <div>
             <h3 className="farm-card-product">{product.name}</h3>
-            <p className="farm-card-farm">{product.farmName}</p>
+            <Link to={`/farm/${product.farmerId}`} className="farm-card-farm farm-card-farm-link">
+              {product.farmName}
+            </Link>
             {product.farmerBio && (
               <p className="farm-card-bio">{product.farmerBio}</p>
             )}

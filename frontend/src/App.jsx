@@ -3,6 +3,7 @@ import Marketplace from './pages/Marketplace.jsx';
 import FarmerListing from './pages/FarmerListing.jsx';
 import Checkout from './pages/Checkout.jsx';
 import RoutesPage from './pages/RoutesPage.jsx';
+import FarmProfile from './pages/FarmProfile.jsx';
 import './App.css';
 
 function Nav() {
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/sell" element={<FarmerListing />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/routes" element={<RoutesPage />} />
+          <Route path="/farm/:farmerId" element={<FarmProfile />} />
         </Routes>
       </main>
       <footer className="app-footer">

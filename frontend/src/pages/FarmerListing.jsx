@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './FarmerListing.css';
 
 const CATEGORIES = ['vegetables', 'fruits', 'meat', 'dairy', 'eggs', 'herbs', 'honey', 'grains', 'other'];
@@ -35,7 +35,27 @@ export default function FarmerListing() {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [priceSuggestion, setPriceSuggestion] = useState(null);
   const recognitionRef = useRef(null);
+  const suggestionTimerRef = useRef(null);
+
+  // Fetch price suggestion whenever category or name changes (debounced 600ms)
+  useEffect(() => {
+    clearTimeout(suggestionTimerRef.current);
+    if (step !== 2) return;
+    suggestionTimerRef.current = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ category: productData.category });
+        if (productData.name.trim().length > 2) params.set('name', productData.name.trim());
+        const res = await fetch(`/api/products/price-suggestion?${params}`);
+        const data = await res.json();
+        setPriceSuggestion(data.sample_size > 0 ? data : null);
+      } catch {
+        setPriceSuggestion(null);
+      }
+    }, 600);
+    return () => clearTimeout(suggestionTimerRef.current);
+  }, [productData.category, productData.name, step]);
 
   function updateFarmer(field, value) {
     if (field.includes('.')) {
@@ -349,6 +369,22 @@ export default function FarmerListing() {
                       onChange={(e) => updateProduct('price', e.target.value)} />
                   </div>
                 </div>
+
+                {priceSuggestion && (
+                  <div className="price-suggestion-hint">
+                    <span className="price-suggestion-text">
+                      💡 Similar products sell for <strong>${priceSuggestion.suggested_min.toFixed(2)} – ${priceSuggestion.suggested_max.toFixed(2)}</strong> on Trust Your Food
+                      {priceSuggestion.sample_size > 1 && <span className="price-suggestion-count"> ({priceSuggestion.sample_size} listings)</span>}
+                    </span>
+                    <button
+                      type="button"
+                      className="price-suggestion-btn"
+                      onClick={() => updateProduct('price', priceSuggestion.average.toFixed(2))}
+                    >
+                      Use ${priceSuggestion.average.toFixed(2)}
+                    </button>
+                  </div>
+                )}
 
                 <div className="form-group">
                   <label className="form-label">Availability Date</label>

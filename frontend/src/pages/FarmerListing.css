@@ -457,3 +457,46 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Price suggestion hint */
+.price-suggestion-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f0faf3;
+  border: 1px solid #b6dfc4;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.price-suggestion-text {
+  flex: 1;
+  font-size: 0.82rem;
+  color: #2d6a4f;
+  line-height: 1.4;
+}
+
+.price-suggestion-count {
+  color: #52796f;
+  font-size: 0.78rem;
+}
+
+.price-suggestion-btn {
+  flex-shrink: 0;
+  background: var(--green-dark, #2d6a4f);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.price-suggestion-btn:hover {
+  background: #1b4332;
+}

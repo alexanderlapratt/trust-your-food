@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import FarmCard from '../components/FarmCard.jsx';
 import FilterSidebar from '../components/FilterSidebar.jsx';
 import ChatDrawer from '../components/ChatDrawer.jsx';
@@ -21,7 +22,8 @@ export default function Marketplace() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
-  const [search, setSearch] = useState('');
+  const location = useLocation();
+  const [search, setSearch] = useState(() => new URLSearchParams(location.search).get('search') || '');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [cartCount, setCartCount] = useState(window.__cart.length);

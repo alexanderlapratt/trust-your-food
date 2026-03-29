@@ -1,3 +1,5 @@
+import dns from 'dns';
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
@@ -112,43 +114,43 @@ const farmers = [
 const productTemplates = [
   // Holloway Heritage Farm
   [
-    { category: 'vegetables', name: 'Heirloom Tomato Mix', description: 'Cherokee Purple, Brandywine, and Green Zebra. Vine-ripened, no refrigeration used.', quantity: 40, unit: 'lb', price: 5.5, imageUrl: 'https://images.unsplash.com/photo-1558818498-28c1e002b655?w=400' },
-    { category: 'eggs', name: 'Pasture-Raised Eggs', description: 'Dozen eggs from heritage hens with access to 3 acres of pasture.', quantity: 60, unit: 'dozen', price: 7.0, imageUrl: 'https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400' },
-    { category: 'meat', name: 'Whole Pasture Chicken', description: 'Air-chilled, 4–5 lb birds. Ready to roast.', quantity: 20, unit: 'bird', price: 28.0, imageUrl: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400' },
+    { category: 'vegetables', name: 'Heirloom Tomato Mix', description: 'Cherokee Purple, Brandywine, and Green Zebra. Vine-ripened, no refrigeration used.', quantity: 40, unit: 'lb', price: 5.5, imageUrl: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&fit=crop' },
+    { category: 'eggs', name: 'Pasture-Raised Eggs', description: 'Dozen eggs from heritage hens with access to 3 acres of pasture.', quantity: 60, unit: 'dozen', price: 7.0, imageUrl: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&fit=crop' },
+    { category: 'meat', name: 'Whole Pasture Chicken', description: 'Air-chilled, 4–5 lb birds. Ready to roast.', quantity: 20, unit: 'bird', price: 28.0, imageUrl: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=600&fit=crop' },
   ],
   // Stone Acre Farm
   [
-    { category: 'vegetables', name: 'Fresh Cucumbers', description: 'English and pickling varieties, harvested daily. Crisp and tender — great raw, in salads, or pickled.', quantity: 80, unit: 'lb', price: 2.5, imageUrl: 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=400' },
-    { category: 'vegetables', name: 'Butternut Squash', description: 'Dense, naturally sweet butternut. Excellent for soups, roasting, or stuffing.', quantity: 45, unit: 'lb', price: 3.0, imageUrl: 'https://images.unsplash.com/photo-1506484381205-f7945653044d?w=400' },
-    { category: 'vegetables', name: 'Delicata Squash', description: 'Sweet, creamy delicata with an edible skin. No peeling required — just slice and roast.', quantity: 30, unit: 'ea', price: 4.0, imageUrl: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400' },
-    { category: 'vegetables', name: 'Summer Zucchini', description: 'Tender zucchini picked young for best flavor. Mild, versatile, and in season.', quantity: 60, unit: 'lb', price: 2.0, imageUrl: 'https://images.unsplash.com/photo-1587411768638-ec71f8e33b78?w=400' },
-    { category: 'fruits', name: 'Honeycrisp Apples', description: 'Connecticut-grown Honeycrisp — crisp, sweet-tart, and picked at peak season. Perfect fresh or in a pie.', quantity: 50, unit: 'lb', price: 4.0, imageUrl: 'https://images.unsplash.com/photo-1567205088573-49b8a21da5d9?w=400' },
-    { category: 'fruits', name: 'Bartlett Pears', description: 'Juicy, fragrant Bartlett pears picked at peak ripeness from shoreline orchards. Great fresh or poached.', quantity: 35, unit: 'lb', price: 3.5, imageUrl: 'https://images.unsplash.com/photo-1615484477778-ca3b77940c25?w=400' },
+    { category: 'vegetables', name: 'Fresh Cucumbers', description: 'English and pickling varieties, harvested daily. Crisp and tender — great raw, in salads, or pickled.', quantity: 80, unit: 'lb', price: 2.5, imageUrl: 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=600&fit=crop' },
+    { category: 'vegetables', name: 'Butternut Squash', description: 'Dense, naturally sweet butternut. Excellent for soups, roasting, or stuffing.', quantity: 45, unit: 'lb', price: 3.0, imageUrl: 'https://images.unsplash.com/photo-1506484381205-f7945653044d?w=600&fit=crop' },
+    { category: 'vegetables', name: 'Delicata Squash', description: 'Sweet, creamy delicata with an edible skin. No peeling required — just slice and roast.', quantity: 30, unit: 'ea', price: 4.0, imageUrl: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=600&fit=crop' },
+    { category: 'vegetables', name: 'Summer Zucchini', description: 'Tender zucchini picked young for best flavor. Mild, versatile, and in season.', quantity: 60, unit: 'lb', price: 2.0, imageUrl: 'https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=600&fit=crop' },
+    { category: 'fruits', name: 'Honeycrisp Apples', description: 'Connecticut-grown Honeycrisp — crisp, sweet-tart, and picked at peak season. Perfect fresh or in a pie.', quantity: 50, unit: 'lb', price: 4.0, imageUrl: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&fit=crop' },
+    { category: 'fruits', name: 'Bartlett Pears', description: 'Juicy, fragrant Bartlett pears picked at peak ripeness from shoreline orchards. Great fresh or poached.', quantity: 35, unit: 'lb', price: 3.5, imageUrl: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&fit=crop' },
   ],
   // Riverstone Dairy
   [
-    { category: 'dairy', name: 'Jersey Whole Milk', description: 'Non-homogenized, cream-top. Half gallon glass bottle (deposit included).', quantity: 35, unit: 'half-gal', price: 9.0, imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400' },
-    { category: 'dairy', name: 'Fresh Chèvre', description: 'Soft goat cheese, herb-rolled or plain. 4 oz log.', quantity: 28, unit: 'log', price: 8.5, imageUrl: 'https://images.unsplash.com/photo-1452195100486-9cc805987862?w=400' },
-    { category: 'dairy', name: 'Greek-Style Yogurt', description: 'Whole milk, plain or vanilla. Thick, tangy, live cultures.', quantity: 40, unit: 'pint', price: 6.0, imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400' },
+    { category: 'dairy', name: 'Jersey Whole Milk', description: 'Non-homogenized, cream-top. Half gallon glass bottle (deposit included).', quantity: 35, unit: 'half-gal', price: 9.0, imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&fit=crop' },
+    { category: 'dairy', name: 'Fresh Chèvre', description: 'Soft goat cheese, herb-rolled or plain. 4 oz log.', quantity: 28, unit: 'log', price: 8.5, imageUrl: 'https://images.unsplash.com/photo-1452195100486-9cc805987862?w=600&fit=crop' },
+    { category: 'dairy', name: 'Greek-Style Yogurt', description: 'Whole milk, plain or vanilla. Thick, tangy, live cultures.', quantity: 40, unit: 'pint', price: 6.0, imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&fit=crop' },
   ],
   // WorthFarm Honey & Herbs
   [
-    { category: 'honey', name: 'Wildflower Raw Honey', description: 'Unfiltered, unheated. Crystallizes naturally — that\'s how you know it\'s real.', quantity: 45, unit: 'jar (12oz)', price: 14.0, imageUrl: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400' },
-    { category: 'herbs', name: 'Fresh Basil', description: 'Genovese and Thai basil. Harvested morning of delivery.', quantity: 30, unit: 'bunch', price: 3.5, imageUrl: 'https://images.unsplash.com/photo-1600521408233-2d0a6b3e0a2a?w=400' },
-    { category: 'herbs', name: 'Culinary Herb Bundle', description: 'Rosemary, thyme, sage, and oregano. Perfect for a Sunday roast.', quantity: 20, unit: 'bundle', price: 5.0, imageUrl: 'https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=400' },
+    { category: 'honey', name: 'Wildflower Raw Honey', description: 'Unfiltered, unheated. Crystallizes naturally — that\'s how you know it\'s real.', quantity: 45, unit: 'jar (12oz)', price: 14.0, imageUrl: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=600&fit=crop' },
+    { category: 'herbs', name: 'Fresh Basil', description: 'Genovese and Thai basil. Harvested morning of delivery.', quantity: 30, unit: 'bunch', price: 3.5, imageUrl: 'https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=600&fit=crop' },
+    { category: 'herbs', name: 'Culinary Herb Bundle', description: 'Rosemary, thyme, sage, and oregano. Perfect for a Sunday roast.', quantity: 20, unit: 'bundle', price: 5.0, imageUrl: 'https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=600&fit=crop' },
   ],
   // Elm City Bakehouse
   [
-    { category: 'grains', name: 'Country Sourdough Loaf', description: 'Naturally leavened with a 24-hour cold ferment. Open crumb, crispy crust. 2 lb loaf.', quantity: 24, unit: 'loaf', price: 9.0, imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400' },
-    { category: 'other', name: 'Pumpkin Pie', description: 'Classic New England pumpkin pie made with local sugar pumpkins and warm spices. 9-inch whole pie.', quantity: 6, unit: 'pie', price: 18.0, imageUrl: 'https://images.unsplash.com/photo-1511994298241-608e28f14fde?w=400' },
-    { category: 'other', name: 'Pecan Pie', description: 'Buttery, caramel-rich pecan pie with a perfectly set filling. A farmers market classic. 9-inch.', quantity: 6, unit: 'pie', price: 20.0, imageUrl: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400' },
-    { category: 'grains', name: 'Dinner Rolls (6-pack)', description: 'Soft, buttery rolls with a golden crust. Baked the morning of delivery.', quantity: 20, unit: '6-pack', price: 7.0, imageUrl: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400' },
+    { category: 'grains', name: 'Country Sourdough Loaf', description: 'Naturally leavened with a 24-hour cold ferment. Open crumb, crispy crust. 2 lb loaf.', quantity: 24, unit: 'loaf', price: 9.0, imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&fit=crop' },
+    { category: 'other', name: 'Pumpkin Pie', description: 'Classic New England pumpkin pie made with local sugar pumpkins and warm spices. 9-inch whole pie.', quantity: 6, unit: 'pie', price: 18.0, imageUrl: 'https://images.unsplash.com/photo-1570696516188-ade861b84a49?w=600&fit=crop' },
+    { category: 'other', name: 'Pecan Pie', description: 'Buttery, caramel-rich pecan pie with a perfectly set filling. A farmers market classic. 9-inch.', quantity: 6, unit: 'pie', price: 20.0, imageUrl: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&fit=crop' },
+    { category: 'grains', name: 'Dinner Rolls (6-pack)', description: 'Soft, buttery rolls with a golden crust. Baked the morning of delivery.', quantity: 20, unit: '6-pack', price: 7.0, imageUrl: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&fit=crop' },
   ],
   // Pratt's Pasture
   [
-    { category: 'meat', name: 'Grass-Fed Ground Beef', description: '85/15 blend. 1 lb vacuum-sealed. Dry-aged 14 days.', quantity: 55, unit: 'lb', price: 12.0, imageUrl: 'https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=400' },
-    { category: 'meat', name: 'Heritage Pork Chops', description: 'Bone-in, 1 inch thick. Two per pack.', quantity: 30, unit: 'pack', price: 18.0, imageUrl: 'https://images.unsplash.com/photo-1432139509613-5c4255815697?w=400' },
-    { category: 'meat', name: 'Beef Bone Broth Pack', description: '4 lbs of mixed marrow and knuckle bones. Rich, gelatinous.', quantity: 22, unit: 'pack', price: 15.0, imageUrl: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=400' },
+    { category: 'meat', name: 'Grass-Fed Ground Beef', description: '85/15 blend. 1 lb vacuum-sealed. Dry-aged 14 days.', quantity: 55, unit: 'lb', price: 12.0, imageUrl: 'https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=600&fit=crop' },
+    { category: 'meat', name: 'Heritage Pork Chops', description: 'Bone-in, 1 inch thick. Two per pack.', quantity: 30, unit: 'pack', price: 18.0, imageUrl: 'https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=600&fit=crop' },
+    { category: 'meat', name: 'Beef Bone Broth Pack', description: '4 lbs of mixed marrow and knuckle bones. Rich, gelatinous.', quantity: 22, unit: 'pack', price: 15.0, imageUrl: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&fit=crop' },
   ],
 ];
 
