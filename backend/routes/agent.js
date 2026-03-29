@@ -110,9 +110,9 @@ Raw speech transcript: "${rawText}"
 
 Return the cleaned answer only.`;
 
-    let cleaned;
+    let raw;
     try {
-      cleaned = await callLava(systemPrompt, userContent);
+      raw = await callLava(systemPrompt, userContent);
     } catch (lavaErr) {
       console.warn('[agent/interpret] Lava failed, falling back to Anthropic:', lavaErr.message);
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -122,16 +122,47 @@ Return the cleaned answer only.`;
         system: systemPrompt,
         messages: [{ role: 'user', content: userContent }],
       });
-      cleaned = response.content[0].text;
+      raw = response.content[0].text;
     }
 
-    res.json({ cleaned: cleaned.trim() });
+    raw = raw.trim();
+
+    if (isProductStep) {
+      // Parse JSON response with { name, category }
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        const match = raw.match(/\{[\s\S]*\}/);
+        try { parsed = match ? JSON.parse(match[0]) : null; } catch { parsed = null; }
+      }
+      if (parsed && parsed.name) {
+        return res.json({ cleaned: parsed.name.trim(), category: parsed.category || null });
+      }
+      // Fallback: return raw as-is if JSON parse fails
+      return res.json({ cleaned: rawText });
+    }
+
+    res.json({ cleaned: raw });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // POST /api/agent/speak — ElevenLabs TTS proxy (streams audio/mpeg back)
+// Tries Bella voice (EXAVITQu4vr4xnSDxMaL) first, falls back to Rachel (21m00Tcm4TlvDq8ikWAM)
+const ELEVENLABS_VOICES = [
+  'EXAVITQu4vr4xnSDxMaL', // Bella — warm, natural
+  '21m00Tcm4TlvDq8ikWAM', // Rachel — fallback
+];
+
+const ELEVENLABS_VOICE_SETTINGS = {
+  stability: 0.35,
+  similarity_boost: 0.85,
+  style: 0.15,
+  use_speaker_boost: true,
+};
+
 router.post('/speak', async (req, res) => {
   try {
     const { text } = req.body;
@@ -142,30 +173,41 @@ router.post('/speak', async (req, res) => {
       return res.status(503).json({ error: 'ElevenLabs API key not configured' });
     }
 
-    const response = await axios.post(
-      'https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM',
-      {
-        text,
-        model_id: 'eleven_monolingual_v1',
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-      },
-      {
-        headers: {
-          'xi-api-key': apiKey,
-          'Content-Type': 'application/json',
-          Accept: 'audio/mpeg',
-        },
-        responseType: 'arraybuffer',
-        timeout: 15000,
+    let lastErr;
+    for (const voiceId of ELEVENLABS_VOICES) {
+      try {
+        const response = await axios.post(
+          `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+          {
+            text,
+            model_id: 'eleven_turbo_v2',
+            voice_settings: ELEVENLABS_VOICE_SETTINGS,
+          },
+          {
+            headers: {
+              'xi-api-key': apiKey,
+              'Content-Type': 'application/json',
+              Accept: 'audio/mpeg',
+            },
+            responseType: 'arraybuffer',
+            timeout: 15000,
+          }
+        );
+        res.set('Content-Type', 'audio/mpeg');
+        res.set('Cache-Control', 'no-cache');
+        return res.send(Buffer.from(response.data));
+      } catch (err) {
+        lastErr = err;
+        // Only retry on 401/404 (voice not found / auth); bail on other errors
+        const status = err.response?.status;
+        if (status !== 401 && status !== 404) break;
       }
-    );
+    }
 
-    res.set('Content-Type', 'audio/mpeg');
-    res.set('Cache-Control', 'no-cache');
-    res.send(Buffer.from(response.data));
+    const status = lastErr?.response?.status || 500;
+    res.status(status).json({ error: lastErr?.message || 'ElevenLabs request failed' });
   } catch (err) {
-    const status = err.response?.status || 500;
-    res.status(status).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 

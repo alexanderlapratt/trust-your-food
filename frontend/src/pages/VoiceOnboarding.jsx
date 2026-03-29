@@ -300,6 +300,7 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
 
   // ── LLM interpretation (improvement 1) ────────────────────────────────────
 
+  // Returns { text: string, category?: string }
   const interpretAnswer = useCallback(async (rawText, stepIdx, d) => {
     try {
       const res = await fetch('/api/agent/interpret', {
@@ -312,11 +313,13 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
         }),
       });
       if (res.ok) {
-        const { cleaned } = await res.json();
-        if (cleaned && cleaned.trim()) return cleaned.trim();
+        const body = await res.json();
+        if (body.cleaned && body.cleaned.trim()) {
+          return { text: body.cleaned.trim(), category: body.category || null };
+        }
       }
     } catch { /* fall through */ }
-    return rawText;
+    return { text: rawText, category: null };
   }, [getPrompt]);
 
   // ── Submit listing ─────────────────────────────────────────────────────────
@@ -396,7 +399,10 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
     // ── LLM interpretation (improvement 1) — skip for practices & confirm ──
     let cleaned = raw;
     if (idx !== 7 && idx !== 9) {
-      cleaned = await interpretAnswer(raw, idx, d);
+      const result = await interpretAnswer(raw, idx, d);
+      cleaned = result.text;
+      // Stash LLM-detected category for the product step (case 3)
+      if (result.category) nd._llmCategory = result.category;
     }
 
     addUser(cleaned);
@@ -427,7 +433,9 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
 
       case 3:
         nd.productName = cleaned;
-        nd.category = guessCategory(cleaned);
+        // Use LLM-detected category if available (set via interpretAnswer), else fall back to regex
+        nd.category = nd._llmCategory || guessCategory(cleaned);
+        delete nd._llmCategory;
         break;
 
       case 4:
