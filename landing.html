@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trust Your Food — Coming Soon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-dark:  #1a3a2a;
+      --green-mid:   #2d5c3d;
+      --green-light: #4a8c5c;
+      --green-glow:  rgba(74, 140, 92, 0.18);
+      --cream:       #f5f0e8;
+      --cream-dim:   rgba(245, 240, 232, 0.65);
+      --cream-faint: rgba(245, 240, 232, 0.12);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--green-dark);
+      color: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* ── Background texture ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(74,140,92,0.22) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 85% 80%, rgba(45,92,61,0.3) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 30% at 10% 90%, rgba(74,140,92,0.12) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Grain overlay ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* ── Layout ── */
+    main {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* ── Nav strip ── */
+    nav {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+      padding: 28px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-badge {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green-light);
+      background: var(--cream-faint);
+      border: 1px solid rgba(74,140,92,0.35);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 72px 0 56px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .hero-icon {
+      font-size: 52px;
+      line-height: 1;
+      filter: drop-shadow(0 4px 24px rgba(74,140,92,0.5));
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    .hero-wordmark {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 10vw, 64px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--cream);
+    }
+
+    .hero-wordmark em {
+      font-style: italic;
+      color: var(--green-light);
+    }
+
+    .hero-tagline {
+      font-size: clamp(11px, 2.5vw, 13px);
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--green-light);
+      opacity: 0.9;
+    }
+
+    .hero-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(19px, 4.5vw, 24px);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.55;
+      color: var(--cream-dim);
+      max-width: 480px;
+    }
+
+    .hero-headline strong {
+      font-style: normal;
+      font-weight: 700;
+      color: var(--cream);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      width: 48px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green-light), transparent);
+      margin: 4px auto;
+    }
+
+    /* ── Features ── */
+    .features {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      padding: 8px 0 56px;
+    }
+
+    .feature-card {
+      background: var(--cream-faint);
+      border: 1px solid rgba(245,240,232,0.1);
+      border-radius: 16px;
+      padding: 24px 18px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      background: rgba(245,240,232,0.08);
+      border-color: rgba(74,140,92,0.35);
+      transform: translateY(-3px);
+    }
+
+    .feature-icon {
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .feature-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1.2;
+    }
+
+    .feature-desc {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--cream-dim);
+      line-height: 1.55;
+    }
+
+    /* ── Signup ── */
+    .signup-section {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 72px;
+    }
+
+    .signup-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--green-light);
+    }
+
+    .signup-form {
+      display: flex;
+      width: 100%;
+      gap: 10px;
+    }
+
+    .signup-input {
+      flex: 1;
+      padding: 14px 18px;
+      background: rgba(245,240,232,0.07);
+      border: 1.5px solid rgba(245,240,232,0.18);
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--cream);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .signup-input::placeholder {
+      color: rgba(245,240,232,0.38);
+    }
+
+    .signup-input:focus {
+      border-color: var(--green-light);
+      background: rgba(245,240,232,0.1);
+    }
+
+    .signup-btn {
+      padding: 14px 22px;
+      background: var(--green-light);
+      color: var(--cream);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 18px rgba(74,140,92,0.35);
+    }
+
+    .signup-btn:hover {
+      background: #5aa06a;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(74,140,92,0.5);
+    }
+
+    .signup-btn:active {
+      transform: translateY(0);
+    }
+
+    .signup-note {
+      font-size: 11px;
+      color: rgba(245,240,232,0.3);
+      text-align: center;
+    }
+
+    /* ── Success state ── */
+    .signup-success {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--green-light);
+      background: var(--cream-faint);
+      border: 1px solid rgba(74,140,92,0.3);
+      border-radius: 10px;
+      padding: 14px 20px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* ── Footer ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      text-align: center;
+      padding: 20px 24px 32px;
+      border-top: 1px solid rgba(245,240,232,0.07);
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: rgba(245,240,232,0.3);
+      letter-spacing: 0.04em;
+    }
+
+    .footer-dot {
+      display: inline-block;
+      width: 3px;
+      height: 3px;
+      background: var(--green-light);
+      border-radius: 50%;
+      vertical-align: middle;
+      margin: 0 8px;
+      opacity: 0.6;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 520px) {
+      .features {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .feature-card {
+        flex-direction: row;
+        text-align: left;
+        padding: 18px 20px;
+        gap: 16px;
+      }
+
+      .feature-icon {
+        font-size: 26px;
+        flex-shrink: 0;
+      }
+
+      .feature-text { display: flex; flex-direction: column; gap: 4px; }
+
+      .signup-form {
+        flex-direction: column;
+      }
+
+      .signup-btn {
+        width: 100%;
+        padding: 15px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo">🌿 Trust Your Food</div>
+    <div class="nav-badge">Coming Soon</div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="hero-icon">🌿</div>
+
+      <div>
+        <div class="hero-tagline">Transparency-first local food infrastructure</div>
+        <div style="height:20px"></div>
+        <h1 class="hero-wordmark">Trust Your<br><em>Food</em></h1>
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="hero-headline">
+        <strong>Know your farmer.</strong> Trust your food.<br>
+        Coming soon to your market.
+      </p>
+    </section>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">🎙️</div>
+        <div class="feature-text">
+          <div class="feature-title">Voice Listing</div>
+          <div class="feature-desc">Farmers list in 2 minutes by voice</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-text">
+          <div class="feature-title">Trust Scores</div>
+          <div class="feature-desc">Verified farm transparency ratings</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚚</div>
+        <div class="feature-text">
+          <div class="feature-title">Smart Delivery</div>
+          <div class="feature-desc">Group routes from $2.99</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="signup-section">
+      <div class="signup-eyebrow">Join the waitlist</div>
+      <div class="signup-form" id="signup-form">
+        <input
+          class="signup-input"
+          type="email"
+          id="email-input"
+          placeholder="Get early access"
+          autocomplete="email"
+        />
+        <button class="signup-btn" onclick="handleSignup()">Notify Me</button>
+      </div>
+      <div class="signup-success" id="signup-success">
+        ✓&nbsp; You're on the list — we'll be in touch soon.
+      </div>
+      <div class="signup-note">No spam. Just a heads-up when we launch near you.</div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-text">
+      trustyourfood.farm
+      <span class="footer-dot"></span>
+      Coming Soon
+      <span class="footer-dot"></span>
+      New Haven, CT &amp; beyond
+    </div>
+  </footer>
+
+  <script>
+    function handleSignup() {
+      const input = document.getElementById('email-input');
+      const form  = document.getElementById('signup-form');
+      const success = document.getElementById('signup-success');
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) {
+        input.style.borderColor = '#c0392b';
+        input.focus();
+        setTimeout(() => { input.style.borderColor = ''; }, 1500);
+        return;
+      }
+      form.style.display = 'none';
+      success.style.display = 'flex';
+    }
+
+    document.getElementById('email-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleSignup();
+    });
+  </script>
+
+</body>
+</html>

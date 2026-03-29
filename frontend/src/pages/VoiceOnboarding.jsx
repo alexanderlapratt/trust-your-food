@@ -378,7 +378,13 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
 
   // Returns { text: string, category?: string }
   const interpretAnswer = useCallback(async (rawText, stepIdx, d) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      console.warn('[interpretAnswer] timed out after 5s, falling back to raw input');
+      controller.abort();
+    }, 5000);
     try {
+      console.log(`[interpretAnswer] step=${stepIdx} (${STEP_LABELS[stepIdx]}) sending raw="${rawText.slice(0,60)}"`);
       const res = await fetch('/api/agent/interpret', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -387,14 +393,26 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
           step: STEP_LABELS[stepIdx],
           rawText,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       if (res.ok) {
         const body = await res.json();
+        console.log(`[interpretAnswer] response:`, body);
         if (body.cleaned && body.cleaned.trim()) {
           return { text: body.cleaned.trim(), category: body.category || null };
         }
+      } else {
+        console.warn(`[interpretAnswer] HTTP ${res.status} from /api/agent/interpret`);
       }
-    } catch { /* fall through */ }
+    } catch (e) {
+      clearTimeout(timeout);
+      if (e.name === 'AbortError') {
+        console.warn('[interpretAnswer] aborted (timeout) — using raw input');
+      } else {
+        console.error('[interpretAnswer] fetch error:', e.message);
+      }
+    }
     return { text: rawText, category: null };
   }, [getPrompt]);
 
@@ -462,14 +480,17 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
     setRedoCount(0);
 
     setProcessing(true);
+    console.log(`[processAnswer] step=${idx} (${STEP_LABELS[idx]}) raw="${raw.slice(0,80)}"`);
 
     // ── LLM interpretation (improvement 1) — skip for practices & confirm ──
     let cleaned = raw;
+    let llmCategory = null;
     if (idx !== 7 && idx !== 9) {
+      console.log(`[processAnswer] calling interpretAnswer...`);
       const result = await interpretAnswer(raw, idx, d);
       cleaned = result.text;
-      // Stash LLM-detected category for the product step (case 3)
-      if (result.category) nd._llmCategory = result.category;
+      llmCategory = result.category || null;
+      console.log(`[processAnswer] interpretAnswer done — cleaned="${cleaned.slice(0,60)}" category=${llmCategory}`);
     }
 
     addUser(cleaned);
@@ -500,9 +521,9 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
 
       case 3:
         nd.productName = cleaned;
-        // Use LLM-detected category if available (set via interpretAnswer), else fall back to regex
-        nd.category = nd._llmCategory || guessCategory(cleaned);
-        delete nd._llmCategory;
+        // Use LLM-detected category if available, else fall back to regex guess
+        nd.category = llmCategory || guessCategory(cleaned);
+        console.log(`[processAnswer] product="${nd.productName}" category="${nd.category}"`);
         break;
 
       case 4:
@@ -517,14 +538,24 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
         } else {
           nd.quantity = cleaned;
         }
-        // Fetch price suggestion for step 6
+        // Fetch price suggestion for step 6 (5s timeout — never block advance)
         try {
           const params = new URLSearchParams({ category: nd.category });
           if (nd.productName.trim().length > 2) params.set('name', nd.productName.trim());
-          const r = await fetch(`/api/products/price-suggestion?${params}`);
+          console.log(`[processAnswer] fetching price suggestion for category="${nd.category}"...`);
+          const psController = new AbortController();
+          const psTimeout = setTimeout(() => {
+            console.warn('[processAnswer] price-suggestion timed out after 5s, skipping');
+            psController.abort();
+          }, 5000);
+          const r = await fetch(`/api/products/price-suggestion?${params}`, { signal: psController.signal });
+          clearTimeout(psTimeout);
           const s = await r.json();
+          console.log(`[processAnswer] price suggestion result:`, s);
           if (s.sample_size > 0) nd.priceSuggestion = s;
-        } catch { /* silent */ }
+        } catch (e) {
+          if (e.name !== 'AbortError') console.warn('[processAnswer] price-suggestion error:', e.message);
+        }
         break;
       }
 
@@ -578,6 +609,8 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
     setProcessing(false);
 
     // ── Return to review if editing a field (improvement 5) ──
+    const nextStep = (returnToReviewRef.current && next !== idx) ? 9 : next;
+    console.log(`[processAnswer] done — advancing to step ${nextStep} (${STEP_LABELS[nextStep] ?? 'complete'})`);
     if (returnToReviewRef.current && next !== idx) {
       returnToReviewRef.current = false;
       advanceTo(9, nd);

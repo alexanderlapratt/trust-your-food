@@ -205,16 +205,46 @@
   padding: 10px 14px;
   border-bottom: 1px solid var(--cream-dark);
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  gap: 10px;
+  align-items: flex-start;
 }
 .chat-suggestion-item:last-of-type {
   border-bottom: none;
+}
+.chat-suggestion-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--cream-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-suggestion-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.chat-suggestion-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+.chat-suggestion-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .chat-suggestion-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .chat-suggestion-farm {
   font-size: 12px;
@@ -227,10 +257,24 @@
   justify-content: space-between;
   gap: 8px;
 }
+.chat-suggestion-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
 .chat-suggestion-price {
   font-size: 13px;
   font-weight: 700;
   color: var(--green-dark);
+  white-space: nowrap;
+}
+.chat-suggestion-qty {
+  font-size: 11px;
+  color: var(--text-light);
+  background: var(--cream-dark);
+  border-radius: 10px;
+  padding: 1px 7px;
   white-space: nowrap;
 }
 .chat-suggestion-reason {

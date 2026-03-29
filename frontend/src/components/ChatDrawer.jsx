@@ -1,6 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 import './ChatDrawer.css';
 
+// The backend fallback sometimes puts the entire raw LLM JSON string into
+// `data.message` when it can't parse the response (e.g. wrapped in markdown).
+// Detect that case and unwrap so the recipe/suggestions fields render properly.
+function normalizeAgentResponse(data) {
+  if (typeof data?.message === 'string') {
+    const trimmed = data.message.trim();
+    if (trimmed.startsWith('{')) {
+      try {
+        const inner = JSON.parse(trimmed);
+        if (inner && typeof inner.message === 'string') return inner;
+      } catch { /* not JSON — keep original */ }
+    }
+  }
+  return data;
+}
+
 export default function ChatDrawer({ open, onClose, products, onAddToCart }) {
   const [messages, setMessages] = useState([
     {
@@ -38,7 +54,7 @@ export default function ChatDrawer({ open, onClose, products, onAddToCart }) {
         body: JSON.stringify({ message: text }),
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Request failed');
-      const data = await res.json();
+      const data = normalizeAgentResponse(await res.json());
       setMessages((prev) => [...prev, {
         role: 'assistant',
         text: data.message || '',
@@ -115,19 +131,37 @@ export default function ChatDrawer({ open, onClose, products, onAddToCart }) {
                     <div className="chat-suggestions-title">🛒 Suggested from local farms</div>
                     {msg.data.suggested_items.map((item, j) => {
                       const found = products.find((p) => String(p._id) === String(item.productId));
+                      const imgSrc = found?.imageUrl || null;
+                      const fallbackEmoji = {
+                        vegetables: '🥦', fruits: '🍎', meat: '🥩', dairy: '🧀',
+                        eggs: '🥚', herbs: '🌿', honey: '🍯', grains: '🌾', other: '🛒',
+                      }[found?.category] || '🌿';
                       return (
                         <div key={j} className="chat-suggestion-item">
-                          <div className="chat-suggestion-main">
-                            <div className="chat-suggestion-name">{item.productName}</div>
-                            <div className="chat-suggestion-farm">{item.farmName}</div>
+                          <div className="chat-suggestion-thumb">
+                            {imgSrc
+                              ? <img src={imgSrc} alt={item.productName} className="chat-suggestion-img" />
+                              : <span className="chat-suggestion-emoji">{fallbackEmoji}</span>
+                            }
                           </div>
-                          <div className="chat-suggestion-meta">
-                            {found && (
-                              <span className="chat-suggestion-price">
-                                ${found.price.toFixed(2)}/{found.unit}
-                              </span>
-                            )}
-                            <div className="chat-suggestion-reason">{item.reason}</div>
+                          <div className="chat-suggestion-content">
+                            <div className="chat-suggestion-main">
+                              <div className="chat-suggestion-name">{item.productName}</div>
+                              <div className="chat-suggestion-farm">{item.farmName}</div>
+                            </div>
+                            <div className="chat-suggestion-meta">
+                              <div className="chat-suggestion-meta-left">
+                                {found && (
+                                  <span className="chat-suggestion-price">
+                                    ${found.price.toFixed(2)}/{found.unit}
+                                  </span>
+                                )}
+                                {item.quantity && (
+                                  <span className="chat-suggestion-qty">{item.quantity}</span>
+                                )}
+                              </div>
+                              <div className="chat-suggestion-reason">{item.reason}</div>
+                            </div>
                           </div>
                         </div>
                       );

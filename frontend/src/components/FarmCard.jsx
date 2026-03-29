@@ -3,6 +3,17 @@ import { Link } from 'react-router-dom';
 import TrustBadge from './TrustBadge.jsx';
 import './FarmCard.css';
 
+function stripMarkdown(text) {
+  return text
+    .replace(/^#{1,6}\s+/gm, '')       // Remove # headings
+    .replace(/\*\*(.*?)\*\*/g, '$1')   // Bold
+    .replace(/\*(.*?)\*/g, '$1')       // Italic
+    .replace(/`(.*?)`/g, '$1')         // Inline code
+    .replace(/^\s*[-*]\s+/gm, '• ')   // List bullets
+    .replace(/\n{3,}/g, '\n\n')        // Collapse excess blank lines
+    .trim();
+}
+
 function TrustModal({ product, onClose }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -32,13 +43,22 @@ function TrustModal({ product, onClose }) {
   useEffect(() => { loadExplanation(); }, []);
 
   const c = data?.breakdown?.components;
+  const displayScore = data?.breakdown?.total ?? product.trustScore ?? 70;
+
+  // Ordered breakdown rows so they always appear in the right sequence
+  const BREAKDOWN_ORDER = [
+    'profileCompleteness',
+    'transparency',
+    'reliability',
+    'community',
+  ];
 
   return (
     <div className="trust-modal-overlay" onClick={onClose}>
       <div className="trust-modal" onClick={(e) => e.stopPropagation()}>
         <div className="trust-modal-header">
           <div>
-            <h3 className="trust-modal-title">Trust Score: {product.trustScore || 70}/100</h3>
+            <h3 className="trust-modal-title">Trust Score: {displayScore}/100</h3>
             <p className="trust-modal-farm">{product.farmName}</p>
           </div>
           <button className="trust-modal-close" onClick={onClose}>✕</button>
@@ -49,17 +69,25 @@ function TrustModal({ product, onClose }) {
           {err && <div className="trust-modal-error">⚠️ {err}</div>}
           {data && (
             <>
-              <div className="trust-modal-explanation">{data.explanation}</div>
+              <div className="trust-modal-explanation">{stripMarkdown(data.explanation)}</div>
               <div className="trust-modal-breakdown">
-                {c && Object.values(c).map((comp) => (
-                  <div key={comp.label} className="trust-breakdown-row">
-                    <div className="trust-breakdown-label">{comp.label}</div>
-                    <div className="trust-breakdown-bar-wrap">
-                      <div className="trust-breakdown-bar" style={{ width: `${(comp.score / comp.max) * 100}%` }} />
+                {c && BREAKDOWN_ORDER.map((key) => {
+                  const comp = c[key];
+                  if (!comp) return null;
+                  return (
+                    <div key={comp.label} className="trust-breakdown-row">
+                      <div className="trust-breakdown-label">{comp.label}</div>
+                      <div className="trust-breakdown-bar-wrap">
+                        <div className="trust-breakdown-bar" style={{ width: `${(comp.score / comp.max) * 100}%` }} />
+                      </div>
+                      <div className="trust-breakdown-score">{comp.score}/{comp.max}</div>
                     </div>
-                    <div className="trust-breakdown-score">{comp.score}/{comp.max}</div>
-                  </div>
-                ))}
+                  );
+                })}
+                <div className="trust-breakdown-total">
+                  <span>Total</span>
+                  <span>{displayScore}/100</span>
+                </div>
               </div>
             </>
           )}
