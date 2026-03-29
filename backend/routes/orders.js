@@ -2,6 +2,7 @@ import express from 'express';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Farmer from '../models/Farmer.js';
+import { sendFarmerNotification, sendFarmerSMS } from '../services/notifications.js';
 
 const router = express.Router();
 
@@ -106,6 +107,51 @@ router.post('/', async (req, res) => {
     });
 
     await order.save();
+
+    // ── Notify each farmer whose products are in this order ───────────────
+    // Runs fire-and-forget so it never delays the HTTP response.
+    try {
+      // Group resolved items by farmerId
+      const itemsByFarmer = {};
+      resolvedItems.forEach((item) => {
+        const fid = item.farmerId.toString();
+        if (!itemsByFarmer[fid]) itemsByFarmer[fid] = [];
+        itemsByFarmer[fid].push(item);
+      });
+
+      const baseOrderDetails = {
+        orderId:        order._id.toString(),
+        orderDate:      order.createdAt || new Date(),
+        customerName,
+        customerEmail,
+        deliveryAddress,
+        deliveryType:   type,
+        deliveryWindow,
+      };
+
+      console.log(`[notify] Order saved. Notifying ${farmers.length} farmer(s)...`);
+
+      farmers.forEach((farmer) => {
+        const farmerItems = itemsByFarmer[farmer._id.toString()] || [];
+        if (!farmerItems.length) return;
+
+        const od = { ...baseOrderDetails, farmerItems };
+
+        // Email — fire-and-forget, full error logged on failure
+        sendFarmerNotification(farmer, od).catch((e) => {
+          console.error(`[notify] Email failed for ${farmer.name} <${farmer.email}>: ${e.message}`);
+        });
+
+        // SMS via Twilio (or console fallback in demo mode) — fire-and-forget
+        sendFarmerSMS(farmer, od).catch((e) => {
+          console.error(`[notify] SMS failed for ${farmer.name}: ${e.message}`);
+        });
+      });
+    } catch (notifyErr) {
+      // Notification errors must never break the order response
+      console.error('[notify] Unexpected notification error:', notifyErr.message);
+    }
+
     res.status(201).json(order);
   } catch (err) {
     res.status(400).json({ error: err.message });

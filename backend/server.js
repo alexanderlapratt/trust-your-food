@@ -13,10 +13,12 @@ import ordersRouter from './routes/orders.js';
 import trustRouter from './routes/trust.js';
 import agentRouter from './routes/agent.js';
 import routesRouter from './routes/routes.js';
+import { logNotificationConfig } from './services/notifications.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, '../.env'), override: true });
 console.log('[server.js] ANTHROPIC_API_KEY:', process.env.ANTHROPIC_API_KEY ? '✓ set' : '✗ MISSING');
+logNotificationConfig();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
