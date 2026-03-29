@@ -541,6 +541,17 @@
   background: rgba(111, 207, 151, 0.06);
 }
 
+.vo-redo-btn-active {
+  border-color: rgba(111, 207, 151, 0.35);
+  color: rgba(111, 207, 151, 0.75);
+}
+
+.vo-redo-btn-active:hover {
+  border-color: #6fcf97;
+  color: #6fcf97;
+  background: rgba(111, 207, 151, 0.08);
+}
+
 /* ── Edit list (review screen) ────────────────────────────────── */
 
 .vo-edit-list {

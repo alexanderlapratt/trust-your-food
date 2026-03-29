@@ -133,6 +133,25 @@ function parseDate(text) {
   return add(3);
 }
 
+// Clear stored data for steps [fromStep, toStep] inclusive — used when going back
+function clearDataRange(fromStep, toStep, d) {
+  const c = { ...d };
+  for (let s = fromStep; s <= toStep; s++) {
+    switch (s) {
+      case 0: c.farmerName = ''; break;
+      case 1: c.farmName = ''; break;
+      case 2: c.bio = ''; break;
+      case 3: c.productName = ''; c.category = 'vegetables'; break;
+      case 4: c.description = ''; break;
+      case 5: c.quantity = ''; c.unit = 'lb'; c.priceSuggestion = null; break;
+      case 6: c.price = ''; break;
+      case 7: c.practices = { noAntibiotics: false, noPesticides: false, pastureRaised: false, organicFeed: false, nonGMO: false }; break;
+      case 8: c.availabilityDate = ''; break;
+    }
+  }
+  return c;
+}
+
 function formatFieldValue(d, step) {
   switch (step) {
     case 0: return d.farmerName || '—';
@@ -169,6 +188,7 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
   const [submitted, setSubmitted]           = useState(false);
   const [error, setError]                   = useState(null);
   const [showEditList, setShowEditList]     = useState(false);
+  const [redoCount, setRedoCount]           = useState(0);
 
   const speechSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
   const synthSupported  = 'speechSynthesis' in window;
@@ -182,6 +202,8 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
   const silenceTimerRef   = useRef(null);
   const stillTimerRef     = useRef(null);
   const currentAudioRef   = useRef(null);
+  const redoCountRef      = useRef(0);   // consecutive redo presses
+  const redoBaseStepRef   = useRef(-1);  // step index when first redo was pressed
 
   stepRef.current = stepIndex;
   dataRef.current = data;
@@ -298,6 +320,60 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
     }, 700);
   }, [getPrompt, addAI, speak]);
 
+  // ── Redo: go back consecutively (improvement 4) ───────────────────────────
+  //
+  //  redoCount == 0  →  first press: re-ask current step (no navigation)
+  //  redoCount >= 1  →  each press: go back one more step, clear that step's data
+
+  const triggerRedo = useCallback((currentIdx, currentData) => {
+    let targetIdx;
+    let shouldClear = false;
+
+    if (redoCountRef.current === 0) {
+      // First redo — just re-ask the same question
+      redoBaseStepRef.current = currentIdx;
+      redoCountRef.current = 1;
+      setRedoCount(1);
+      targetIdx = currentIdx;
+    } else {
+      // Second+ redo — step back one more from the original base step
+      redoCountRef.current += 1;
+      setRedoCount(redoCountRef.current);
+      const stepsBack = redoCountRef.current - 1;
+      targetIdx = Math.max(0, redoBaseStepRef.current - stepsBack);
+      shouldClear = true;
+    }
+
+    // Remove the most recent user bubble (their last answer) from chat
+    setChatHistory(h => {
+      const copy = [...h];
+      for (let i = copy.length - 1; i >= 0; i--) {
+        if (copy[i].role === 'user') { copy.splice(i, 1); break; }
+      }
+      return copy;
+    });
+
+    // Clear data for all steps from targetIdx up to the base step
+    let nextData = currentData;
+    if (shouldClear) {
+      nextData = clearDataRange(targetIdx, redoBaseStepRef.current, currentData);
+      setData(nextData);
+      dataRef.current = nextData;
+    }
+
+    const isGoingBack = targetIdx < currentIdx;
+    const prefix = isGoingBack
+      ? `Going back to ${STEP_LABELS[targetIdx]}.`
+      : 'Sure! Let me re-ask.';
+    const prompt = getPrompt(targetIdx, nextData);
+
+    setTimeout(() => {
+      addAI(`${prefix} ${prompt}`);
+      speak(`${prefix} ${prompt}`);
+      if (targetIdx !== currentIdx) setStepIndex(targetIdx);
+    }, 300);
+  }, [getPrompt, addAI, speak]);
+
   // ── LLM interpretation (improvement 1) ────────────────────────────────────
 
   // Returns { text: string, category?: string }
@@ -372,27 +448,18 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
     const raw = answer.trim();
     if (!raw) return;
 
-    // ── Redo detection (improvement 4) — checked before LLM interpretation ──
+    // ── Redo detection — checked before LLM interpretation ───────────────────
     const isRedo = /\b(redo|again|repeat|start over|go back|try again)\b/i.test(raw);
     if (isRedo) {
-      addUser(raw);
       setLiveTranscript('');
       setTextInput('');
-      // Remove that user bubble we just added
-      setChatHistory(h => {
-        const copy = [...h];
-        for (let i = copy.length - 1; i >= 0; i--) {
-          if (copy[i].role === 'user') { copy.splice(i, 1); break; }
-        }
-        return copy;
-      });
-      const prompt = getPrompt(idx, d);
-      setTimeout(() => {
-        addAI(`Sure! Let me re-ask. ${prompt}`);
-        speak(`Sure! Let me re-ask. ${prompt}`);
-      }, 300);
+      triggerRedo(idx, d);
       return;
     }
+
+    // Real answer — reset consecutive redo counter
+    redoCountRef.current = 0;
+    setRedoCount(0);
 
     setProcessing(true);
 
@@ -517,7 +584,7 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
     } else {
       advanceTo(next, nd);
     }
-  }, [addUser, addAI, advanceTo, submitListing, interpretAnswer, getPrompt, speak]);
+  }, [addUser, addAI, advanceTo, submitListing, interpretAnswer, getPrompt, speak, triggerRedo]);
 
   // ── Edit a specific field from review (improvement 5) ─────────────────────
 
@@ -620,22 +687,11 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
     if (textInput.trim()) processAnswer(textInput, stepRef.current, dataRef.current);
   }, [textInput, processAnswer]);
 
-  // ── Redo button handler (improvement 4) ───────────────────────────────────
+  // ── Redo button handler — delegates to triggerRedo ────────────────────────
 
   const handleRedo = useCallback(() => {
-    const prompt = getPrompt(stepRef.current, dataRef.current);
-    setChatHistory(h => {
-      const copy = [...h];
-      for (let i = copy.length - 1; i >= 0; i--) {
-        if (copy[i].role === 'user') { copy.splice(i, 1); break; }
-      }
-      return copy;
-    });
-    setTimeout(() => {
-      addAI(`Sure! Let me re-ask. ${prompt}`);
-      speak(`Sure! Let me re-ask. ${prompt}`);
-    }, 200);
-  }, [getPrompt, addAI, speak]);
+    triggerRedo(stepRef.current, dataRef.current);
+  }, [triggerRedo]);
 
   // ── Init: speak first question ─────────────────────────────────────────────
 
@@ -656,7 +712,10 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
     setChatHistory([]);
     setError(null);
     setShowEditList(false);
+    setRedoCount(0);
     returnToReviewRef.current = false;
+    redoCountRef.current = 0;
+    redoBaseStepRef.current = -1;
     const prompt = getPrompt(0, DEFAULT_DATA);
     setTimeout(() => { addAI(prompt); speak(prompt); }, 100);
   }, [getPrompt, addAI, speak]);
@@ -885,10 +944,14 @@ export default function VoiceOnboarding({ onSwitchToForm }) {
             {processing ? 'Processing…' : listening ? 'Tap to stop' : 'Tap to speak'}
           </p>
 
-          {/* Redo button (improvement 4) */}
+          {/* Redo button — label changes after first press */}
           {stepIndex > 0 && !listening && !processing && (
-            <button className="vo-redo-btn" onClick={handleRedo} title="Re-ask current question">
-              ↩ Redo
+            <button
+              className={`vo-redo-btn${redoCount >= 1 ? ' vo-redo-btn-active' : ''}`}
+              onClick={handleRedo}
+              title={redoCount >= 1 ? 'Go back one more step' : 'Re-ask the current question'}
+            >
+              {redoCount >= 1 ? '↩ Go Back Further' : '↩ Redo'}
             </button>
           )}
 
